@@ -21,14 +21,14 @@
 #ifdef DEBUG
 static FILE *file;
 void openDebugFile() {
-   char path[CCHMAXPATH];
+   char *path;
    char fileName[CCHMAXPATH+11];
    BOOL rc;
    if (!file) {
-      rc = mciQuerySysValue(MSV_WORKPATH, path);
-      if (rc) {
-          sprintf(fileName,"%s\\mmioVorbis%ld.log",path,time(NULL));
-	      file = fopen(fileName,"wb");
+      path = getenv("LOGFILES");
+      if (path) {
+          snprintf(fileName, CCHMAXPATH+11,"%s\\mmioVorbis.log", path);
+	      file = fopen(fileName,"a");
 //	      file = freopen(fileName,"wb",stderr);
       } else {
           exit(-1);
@@ -49,7 +49,7 @@ size_t mread(void *ptr, size_t size, size_t nmemb, void *datasource)
 int mseek(void *datasource, ogg_int64_t offset, int whence) {
  	long rc = mmioSeek((HMMIO)datasource, offset, whence);
 #ifdef DEBUG
-fprintf(file,"Attempt %ld, %d. Seeked to %d\n",offset,whence,rc);
+fprintf(file,"Attempt %lld, %d. Seeked to %ld\n",offset,whence,rc);
 #endif
  	if (rc < 0) return rc;
  	return 0;
@@ -116,10 +116,10 @@ fprintf(file,"Write a page\n");
 #endif
           result=ogg_stream_pageout(&encInfo->os,&encInfo->og);
           if(result==0)break;
-          result = mmioWrite(encInfo->hmmioSS, encInfo->og.header,encInfo->og.header_len);
+          result = mmioWrite(encInfo->hmmioSS, (PCHAR) encInfo->og.header,encInfo->og.header_len);
           total += result;
           if (result!=encInfo->og.header_len) return -1;
-          result = mmioWrite(encInfo->hmmioSS, encInfo->og.body,encInfo->og.body_len);
+          result = mmioWrite(encInfo->hmmioSS, (PCHAR) encInfo->og.body,encInfo->og.body_len);
           total += result;
           if (result!=encInfo->og.body_len) return -1;
       }
@@ -131,10 +131,16 @@ fprintf(file,"Wrote %d\n",total);
     return total;
 }
 
-static LONG APIENTRY IOProc_Entry2(PVOID pmmioStr, USHORT usMsg, LONG lParam1,
-                     LONG lParam2) {
+LONG APIENTRY IOProc_Entry(PVOID pmmioStr, USHORT usMsg, LONG lParam1, LONG lParam2)
+{
 	PMMIOINFO pmmioinfo = (PMMIOINFO)pmmioStr;
-	switch (usMsg) {
+
+#ifdef DEBUG
+        openDebugFile();
+        fprintf(file,"command: %x\n",usMsg);
+#endif
+
+        switch (usMsg) {
 	case MMIOM_OPEN:
 		{	
      		HMMIO hmmioSS;
@@ -143,7 +149,8 @@ static LONG APIENTRY IOProc_Entry2(PVOID pmmioStr, USHORT usMsg, LONG lParam1,
    	 		if (!pmmioinfo) return MMIO_ERROR;
   	  		if ((pmmioinfo->ulFlags & MMIO_READWRITE)) {
 #ifdef DEBUG
-			fprintf(file,"ReadWrite - requested.\n");
+                          openDebugFile();
+			  fprintf(file,"ReadWrite - requested.\n");
 #endif
    	  		   return MMIO_ERROR;
   	  		}
@@ -291,7 +298,7 @@ fprintf(file,"Read rc:%ld total:%ld\n",rc,total);
            return MMIO_ERROR;
         }
 #ifdef DEBUG
-fprintf(file,"Seek to %ld by %d\n",lPosDesired, lParam2);
+fprintf(file,"Seek to %ld by %ld\n",lPosDesired, lParam2);
 #endif
 		if (ov_pcm_seek(oggfile, lPosDesired) < 0) return MMIO_ERROR;
 
@@ -349,18 +356,23 @@ fprintf(file,"Seek to %ld by %d\n",lPosDesired, lParam2);
     break;
 	case MMIOM_IDENTIFYFILE: {
     	unsigned char buf[4];
-		HMMIO hmmioTemp;
-		ULONG ulTempFlags = MMIO_READ | MMIO_DENYWRITE | MMIO_NOIDENTIFY;
-		LONG rc = MMIO_ERROR;
+        HMMIO hmmioTemp;
+        ULONG ulTempFlags = MMIO_READ | MMIO_DENYWRITE | MMIO_NOIDENTIFY;
+        LONG rc = MMIO_ERROR;
 
-		if (!lParam1 && !lParam2) return MMIO_ERROR;
+        if (!lParam1 && !lParam2){
+#ifdef DEBUG
+       	    fprintf(file,"No lParams\n");
+#endif	  
+            return MMIO_ERROR;
+        }
     	hmmioTemp = (HMMIO)lParam2;
     	if (!hmmioTemp) {
         	hmmioTemp = mmioOpen((PSZ)lParam1, NULL, ulTempFlags);
         }
 
 		if (hmmioTemp) {
-			rc = mmioRead(hmmioTemp, buf, 4);
+			rc = mmioRead(hmmioTemp, (PCHAR) buf, 4);
 			if (rc == 4 && buf[0] == 'O' && buf[1] == 'g' &&
 					buf[2] == 'g' && buf[3] == 'S') {
 				rc = MMIO_SUCCESS;
@@ -475,10 +487,10 @@ fprintf(file,"Seek to %ld by %d\n",lPosDesired, lParam2);
 		encInfo = (EncInfo*)pmmioinfo->pExtraInfoStruct;
 		if (WRITENUM != encInfo->t) return 0;
 #ifdef DEBUG
-fprintf(file,"write header: %x, %x, %x\n",!(pmmioinfo->ulFlags & MMIO_WRITE),
+fprintf(file,"write header: %x, %ld, %x\n",!(pmmioinfo->ulFlags & MMIO_WRITE),
 	encInfo->headerSet, (!(pmmioinfo->ulTranslate & MMIO_TRANSLATEHEADER) && 
 		        !(pmmioinfo->ulTranslate & MMIO_TRANSLATEDATA)));
-fprintf(file,"flag: %x, trans: %x\n",pmmioinfo->ulFlags,pmmioinfo->ulTranslate);
+fprintf(file,"flag: %ld, trans: %ld\n",pmmioinfo->ulFlags,pmmioinfo->ulTranslate);
 #endif
 		if (/*!(pmmioinfo->ulFlags & MMIO_WRITE) ||*/ encInfo->headerSet
 		    || (!(pmmioinfo->ulTranslate & MMIO_TRANSLATEHEADER) && 
@@ -561,7 +573,7 @@ fprintf(file,"encodeInit failed: %d\n",rc);
 	while(1){
 		int result=ogg_stream_flush(&encInfo->os,&encInfo->og);
 		if(result==0)break;
-		result = mmioWrite(encInfo->hmmioSS, encInfo->og.header,encInfo->og.header_len);
+		result = mmioWrite(encInfo->hmmioSS, (PCHAR) encInfo->og.header,encInfo->og.header_len);
         totalout += result;
 		if (result!=encInfo->og.header_len) {
 	               ogg_stream_clear(&encInfo->os);
@@ -571,7 +583,7 @@ fprintf(file,"encodeInit failed: %d\n",rc);
 	               vorbis_info_clear(&encInfo->vi);
 			return 0;
         }
-		result = mmioWrite(encInfo->hmmioSS, encInfo->og.body,encInfo->og.body_len);
+		result = mmioWrite(encInfo->hmmioSS, (PCHAR) encInfo->og.body,encInfo->og.body_len);
         totalout += result;
 		if (result!=encInfo->og.body_len) {
 	               ogg_stream_clear(&encInfo->os);
@@ -604,7 +616,7 @@ fprintf(file,"encodeInit failed: %d\n",rc);
 				int j, k;
                 int num;
 				float denom = 1;
-                signed char *readbuffer = (char *)lParam1;
+                char *readbuffer = (char *)lParam1;
                 /* data to encode */
                 /* expose the buffer to submit data */
 				int sampleSize = encInfo->vi.channels*encInfo->bitsPerSample/8;
@@ -663,9 +675,8 @@ fprintf(file,"Bad Write Buffer Size\n");
 #endif
 	return MMIOERR_UNSUPPORTED_MESSAGE;
 }
-
-LONG APIENTRY IOProc_Entry(PVOID pmmioStr, USHORT usMsg, LONG lParam1,
-                     LONG lParam2) {
+#if 0
+LONG APIENTRY IOProc_Entry(PVOID pmmioStr, USHORT usMsg, LONG lParam1, LONG lParam2) {
     unsigned cw;
     LONG rc;
 
@@ -680,4 +691,4 @@ LONG APIENTRY IOProc_Entry(PVOID pmmioStr, USHORT usMsg, LONG lParam1,
 //    cw = _control87(cw,MCW_EM);
     return rc;
 }
-
+#endif

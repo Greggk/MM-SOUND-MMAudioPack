@@ -9,6 +9,7 @@
 #include <os2me.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "mmioVorbis.h"
 
 int main(int argc, char *argv[])
@@ -34,7 +35,7 @@ int main(int argc, char *argv[])
 
       if (in) {
          ULONG headerLength;
-         rc = mmioQueryHeaderLength(in, &headerLength, 0, 0);
+         rc = mmioQueryHeaderLength(in, (PLONG) &headerLength, 0, 0);
          if (MMIO_SUCCESS==rc && headerLength == sizeof(MMAUDIOHEADER)) {
            MMAUDIOHEADER header;
            LONG bytesRead = 0;
@@ -66,4 +67,3 @@ int main(int argc, char *argv[])
 
       return result;
 }
-
