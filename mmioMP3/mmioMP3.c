@@ -32,7 +32,7 @@ void openDebugFile() {
    char fileName[CCHMAXPATH+11];
    BOOL rc;
    if (!file) {
-      rc = mciQuerySysValue(MSV_WORKPATH, path);
+      path = getenv("LOGFILES");
       if (rc) {
           sprintf(fileName,"%s\\mmiomp3%ld.log",path,time(NULL));
 	      file = fopen(fileName,"wb");
@@ -814,7 +814,7 @@ fprintf(file, "location: %ld\n",mp3info->location);
 		LONG rc = MMIO_ERROR;
         LONG rc2;
 #ifdef NOIDENTIFY
-		return MMIO_SUCCESS;
+		//return MMIO_SUCCESS;
 #endif
     	if (!lParam1 && !lParam2) return MMIO_ERROR;
     	hmmioTemp = (HMMIO)lParam2;
@@ -835,8 +835,8 @@ fprintf(file, "location: %ld\n",mp3info->location);
  					if (stream && frame) {
     				  	mad_stream_init(stream);
 			         	mad_frame_init(frame);
-       					mad_stream_buffer(stream, buf, rc2);
-       					do {
+                                        mad_stream_buffer(stream, buf, rc2);
+       					//do {
 #ifdef DEBUG
 fprintf(file,"next: %ld, end: %ld\n", stream->next_frame, stream->bufend);
 #endif
@@ -844,7 +844,7 @@ fprintf(file,"next: %ld, end: %ld\n", stream->next_frame, stream->bufend);
 #ifdef DEBUG
 fprintf(file,"identify: %s\n", mad_stream_errorstr(stream));
 #endif
-               			} while (-1 == rc2 && MAD_RECOVERABLE(stream->error));
+               			//} while (-1 == rc2 && MAD_RECOVERABLE(stream->error));
                			if (rc2==0) rc2 = mad_header_decode(&frame->header, stream);
 #ifdef DEBUG
 fprintf(file,"identify rc2: %ld\n", rc2);

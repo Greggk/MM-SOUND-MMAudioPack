@@ -5,6 +5,7 @@
 #define INCL_MMIOOS2
 #include <os2.h>
 #include <os2me.h>
+#include <string.h>
 
 #define FOURCC_MP3 mmioFOURCC('M', 'P', '3', ' ')
 #define MP3_COOKIE 0x072D6337

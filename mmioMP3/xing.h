@@ -22,6 +22,7 @@
 # ifndef XING_H
 # define XING_H
 
+#include <string.h>
 # include <mad.h>
 
 struct xing {
