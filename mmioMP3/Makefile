@@ -1,15 +1,15 @@
 .DELETE_ON_ERROR:
 CC=gcc
-CFLAGS=-O2 -DUSE_OS2_TOOLKIT_HEADERS
+CFLAGS=-O2 -DUSE_OS2_TOOLKIT_HEADERS 
 #CFLAGS=-Wall -g -DDEBUG -DUSE_OS2_TOOLKIT_HEADERS
-LIBS= -lm -los2me -Llibmad-0.15.0b/.libs -lmad
-INCLUDES= -Ilibmad-0.15.0b/
+LIBS= -lm -lMMPM2 -Llibmad-0.15.1b/.libs -lmad 
+INCLUDES= -Ilibmad-0.15.1b/
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CFLAGS)
 
 all: mmioMP3.dll bitrate.exe
 
 bitrate.exe: bitrate.c
-	$(CC) $(CFLAGS) $^ -o $@ -Zstack 65536 -lm -los2me
+	$(CC) $(CFLAGS) $^ -o $@ -Zstack 65536 -lm -lMMPM2
                                                                  
 %.o: %.c
 	$(COMPILE) -c $<

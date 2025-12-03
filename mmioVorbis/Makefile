@@ -1,29 +1,30 @@
 CC=gcc
-CFLAGS=-O2 -Zomf -DUSE_OS2_TOOLKIT_HEADERS
-#CFLAGS=-Wall -g -DDEBUG -Zomf -DUSE_OS2_TOOLKIT_HEADERS
-LIBS= -lm -los2me
-INCLUDES= -Ilibvorbis-1.0/include -Ilibogg-1.0/include
+#CFLAGS=-O2 -Zomf -DUSE_OS2_TOOLKIT_HEADERS
+CFLAGS=-Wall -g -Zomf -DUSE_OS2_TOOLKIT_HEADERS 
+#-DDEBUG
+LIBS= -lm -lmmpm2 -static-libgcc
+INCLUDES= -Ilibvorbis-1.3.7\libvorbis-1.3.7\include\vorbis -Ilibogg-1.3.5\libogg-1.3.5\include\ogg 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CFLAGS)
 
-all: mmioVorb.dll convert.exe bitrate.exe
+all: mmioVorb.dll convert.exe bitrate.exe mmioVorbis.exe
                                                                  
 bitrate.exe: bitrate.c
-	$(CC) $(CFLAGS) $^ -o $@ -Zstack 65536 $(INCLUDES) -lm -los2me
+	$(CC) $(CFLAGS) $^ -o $@ -Zstack 65536 $(INCLUDES) -lm -lmmpm2
 
-%.obj: %.c
+%.o: %.c
 	$(COMPILE) -c $<
 
-*.obj: mmioVorbis.h
+*.o: mmioVorbis.h
 
-mmioVorb.dll: mmioVorbis.obj 
-	$(CC) $(CFLAGS) -Zdll -Zcrtdll $(LDFLAGS) $(INCLUDES) $^ libvorbis-1.0/lib/vorbis.lib libogg-1.0/src/ogg.lib mmiovorbis.def -o $@ $(LIBS)
+mmioVorb.dll: mmioVorbis.o 
+	$(CC) $(CFLAGS) -Zdll -Zcrtdll $(LDFLAGS) $(INCLUDES) $^  -Llibvorbis-1.3.7\libvorbis-1.3.7\build\lib -lvorbis.a -lvorbisenc.a -lvorbisfile.a -llibogg-1.3.5\libogg-1.3.5\build\ogg.a mmiovorbis.def -o $@ $(LIBS)
 
 convert.exe: convert.c
 	$(CC) $(CFLAGS) $^ -o $@ -Zstack 65536 $(INCLUDES) $(LIBS)
 
-mmioVorbis.exe: main.obj
+mmioVorbis.exe: main.o
 	$(CC) $(CFLAGS) $^ -o $@ -Zstack 65536 $(LIBS)
 	
 clean:
-	-rm core *.obj mmiovorbis.exe mmiovorb.dll convert.exe bitrate.exe
+	-rm *.o mmiovorbis.exe mmiovorb.dll convert.exe bitrate.exe
 
