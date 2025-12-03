@@ -1,0 +1,5 @@
+    6
+/* Disk# Group# Dest# Source# Filename  */
+    0       1      0       0      "install.dll"
+    0       1      0       0      "MMIOMP3.DLL"
+    0       1      1       0      "MMIOMP3.SCR"
