@@ -1,0 +1,38 @@
+PREAMBLE
+
+This package contains the MP3 support module (MMIOProc) from Russell O'Conner's 
+MMAudioPak. The MMIOProc includes updates and fixes by Gregg Young.
+
+Since ArcaOS (v5 and later) already includes the Ogg Vorbis and FLAC 
+support modules, ArcaOS users generally only require the MP3 module.
+
+ACKNOWLEDGMENTS
+
+The MP3 MMIOProc module and install files are (C) 2000-2003 Russell O'Connor
+and Robert Leslie; see the included file mmiomp3.html for details.  Licensed
+under the GNU General Public License.
+
+The installation scripts have been modified by Alex Taylor from Russell's 
+original release in order to install only the MP3 support files.  
+
+Gregg Young updated the MMIOProc to libmad 0.15.1b and modified the MP3
+identification code to more accurately identify MP3s. 
+
+The complete MMAudioPak source code, is available at:
+http://trac.netlabs.org/mmcodecs
+
+The original distribution is available at:
+http://r6.ca/MMAudioPak/MMAudioPak.zip 
+
+Change:
+
+Version 1.0
+- Russell O'Connor's original release
+
+Version 1.1
+- Alex Taylor's modified install package
+
+Version 1.2 (Gregg Young)
+- Updated libmad to version 0.15.1b 
+  (available on http://hobbesarchive.com/?dir=%2F&stype=all&sort=type_name&search=libmad&submit=Search)
+- Fix file identification code to avoid identifying nonMP3 files as MP3s (diff included)

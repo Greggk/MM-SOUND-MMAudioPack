@@ -1,0 +1,33 @@
+PREAMBLE
+
+This package contains the Flac support module (MMIOProc) from Russell O'Conner's 
+MMAudioPak. The MMIOProc includes updates and fixes by Gregg Young.
+
+ArcaOS (v5 and later) include the FLAC support module. This is an update to that
+module
+
+ACKNOWLEDGMENTS
+
+The FLAC MMIOProc module and install files are (C) 2000-2003 Russell O'Connor
+and Robert Leslie; Licensed under the GNU General Public License.
+
+The installation scripts have been modified by Gregg Young from Russell's 
+original release in order to install only the FLAC support files.  
+
+Gregg Young updated the MMIOProc to 1.4.3. 
+
+The complete MMAudioPak source code, is available at:
+http://trac.netlabs.org/mmcodecs
+
+The original distribution is available at:
+http://r6.ca/MMAudioPak/MMAudioPak.zip 
+
+Change:
+
+Version 1.0
+- Russell O'Connor's original release
+
+Version 1.1 (Gregg Young)
+- Updated FLAC to version 1.4.3 (fixes converting to and from the FLAC format)
+  (available on hobbesarchive.com)
+- Updated installer to install just the FLAC module and do the minstall from the warpin 
